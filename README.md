@@ -42,31 +42,46 @@ python3 run_evaluation.py --file target_position.csv --output_dir results
 ## 2. Methodology
 ### 2.1 Data Processing
 * Load and reformat data from zip file
-* Construct reversal signals
+* Construct reversal signals at every minute
     - Bollinger band
     - Stochastic oscillator
-    - MACF
+    - MACD
     - Momentum 
+* Fill missing price with last available price
 
-### 2.2 Model
-The final position assignment model uses a signal weighting scheme to allocate position. It takes the average of **Bollinger band** and **Momentum** signals and normalizes signal scores of each stock within the long/short bucket. 
+### 2.2 Weighting Scheme
+Taking momentum signal as an example, at the end of each minute, we rank stocks from lowest to highest trailing return. We then split the top/bottom half names into long/short bucket. For each stock in the long/short bucket, we can assign either (1) equal weighting, or (2) signal weighting to obtain the weights. 
+
+1. Equal weighted
+
+   Each stock in the long/short bucket is assigned equal proportion of the notional value
+    
+2. Signal weighted
+
+   Normalized signal scores within long/short bucket by sum of signal scores in each bucket
+
+
+### 2.3 Model
+We start by constructing univariate model - use one reversal signal to weight position and evaluate the efficacy of individual signal to assigninig target position. 
+
+The final position assignment model is a multivariate model -- take the average of **Bollinger band** and **Momentum** values as the new signal, and assign position using a signal-weighting scheme.
 
 The model is developed with the following properties:
 
-- Zero net exposure (measured in notional value) is zero minute-by-minute
+- Zero net exposure (measured in notional value) minute-by-minute
     - By normalizing signal scores within long/short bucket
 - Zero overnight risk exposure
     - By liquidating all positions by market close
 
 
-### 2.3 Key Assumption
+### 2.4 Key Assumption
 When constructing and evaluating models, we made following assumptions:
 * Frictionless market - ignore transaction cost, bid-ask spread, commission fee
 * Able to rebalance portfolio and adjust position by the end of each minute interval
 * Able to enter a position at `open` price in next minute
 
 
-### 2.4 Evaluation
+### 2.5 Evaluation
 We evaluate overall performance of the position assignment model by evaluating the corresponding portfolio using
 - Sharpe ratio
 - Annualized volatility

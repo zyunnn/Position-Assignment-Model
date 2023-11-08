@@ -35,8 +35,12 @@ def scale_signal(signals, scale_factor):
 
 
 def normalize_signal(signals):
-    '''Normalize signal within long/short bucket such  
-    that overall net exposure is (close to) zero
+    '''Normalize signal within long/short bucket
+
+    1. Rank stocks by signal score to assign names into long/short bucket
+    2. Normalized signal score by sum of signal score in each bucket
+    
+    This ensures that overall net exposure is (close to) zero
 
     Parameters
     ----------
